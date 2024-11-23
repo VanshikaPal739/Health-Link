@@ -3,6 +3,7 @@ const Model = require('../Models/DoctorModel');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const router = express.Router();
+const verifyToken = require('../Middlewares/verifytoken');
 
 
 router.post('/add', (req, res) => {
@@ -20,10 +21,20 @@ router.post('/add', (req, res) => {
 });
 
 
-
 //getall
 router.get('/getall', (req, res) => {
     Model.find()
+        .then((result) => {
+            res.status(200).json(result);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+});
+
+router.get('/get-detail', verifyToken, (req, res) => {
+    Model.findById(req.user._id)
+
         .then((result) => {
             res.status(200).json(result);
         }).catch((err) => {
@@ -67,8 +78,8 @@ router.delete('/delete/:id', (req, res) => {
 });
 
 //update
-router.put('/update/:id', (req, res) => {
-    Model.findByIdAndUpdate(req.params.id, req.body, { new: true })
+router.put('/update', verifyToken, (req, res) => {
+    Model.findByIdAndUpdate(req.user._id, req.body, { new: true })
         .then((result) => {
             res.status(200).json(result);
         }).catch((err) => {

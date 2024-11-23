@@ -6,6 +6,7 @@ const SlotRouter = require('./Routers/SlotRouter.js');
 const AppointmentRouter = require('./Routers/AppointmentRouter.js');
 const LabtestRouter = require('./Routers/LabtestRouter.js');
 const utilRouter = require('./Routers/utils.js');
+const ReviewRouter = require('./Routers/ReviewRouter.js');
 const cors = require('cors');
 
 // initialize express
@@ -21,9 +22,10 @@ app.use(express.json());
 app.use('/user', UserRouter);
 app.use('/doctor', DoctorRouter);
 app.use('/slot', SlotRouter);
-app.use('/Appointment', AppointmentRouter);
+app.use('/appointment', AppointmentRouter);
 app.use('/Labtest', LabtestRouter);
 app.use('/util', utilRouter);
+app.use('/review',ReviewRouter);
 
 app.use(express.static('./static/uploads'));
 

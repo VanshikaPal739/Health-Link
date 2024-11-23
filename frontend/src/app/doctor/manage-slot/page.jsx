@@ -6,38 +6,45 @@ import * as Yup from 'yup';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+
 export default function ManageSlotsPage() {
   const [slots, setSlots] = useState([]);
-  const [doctorList, setDoctorList] = useState([]);
+  const [doctor, setDoctor] = useState(null);
   const [token, setToken] = useState(null);
-  const runOnce = useRef(false); // Ensures doctor and slot fetching only happens once
+  const runOnce = useRef(false); // Ensures fetching happens only once
++
 
+  // Retrieve token from localStorage
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     setToken(savedToken);
   }, []);
 
-  // Fetch doctors list to map their names with slots
-  const fetchDoctors = async () => {
+
+  // Fetch logged-in doctor's details
+  const fetchLoggedInDoctor = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/doctor/getall', {
+      const res = await axios.get('http://localhost:5000/doctor/add-doctor', {
         headers: { 'x-auth-token': token },
       });
-      setDoctorList(res.data);
+      setDoctor(res.data); // Update state with logged-in doctor details
     } catch (error) {
-      console.error('Error fetching doctors:', error);
-      toast.error('Failed to fetch doctor list');
+      console.error('Error fetching logged-in doctor:', error);
+      toast.error('Failed to fetch logged-in doctor details');
     }
   };
 
-  // Fetch slots data from the backend API
+
+  // Fetch slots data
   const fetchSlots = async () => {
-    if (!token) return; // Ensure token is set before fetching
+    if (!token) return;
 
     try {
       const res = await axios.get('http://localhost:5000/slot/getbydoctor', {
         headers: { 'x-auth-token': token },
       });
+      console.log('Slots:', res.data);
+      
       setSlots(res.data);
     } catch (error) {
       console.error('Error fetching slots:', error);
@@ -45,37 +52,34 @@ export default function ManageSlotsPage() {
     }
   };
 
-  // Fetch doctors and slots only once when component mounts
+
+  // Fetch doctor and slots on component mount
   useEffect(() => {
     if (!runOnce.current && token) {
-      fetchDoctors();
+      fetchLoggedInDoctor();
       fetchSlots();
       runOnce.current = true;
     }
   }, [token]);
 
-  // Helper function to find doctor name by ID
-  const getDoctorName = (doctorId) => {
-    const doctor = doctorList.find((doc) => doc.id === doctorId);
-    return doctor ? doctor.name : 'Unknown';
-  };
 
-  // Formik form handling
+  // Formik setup for adding a slot
   const formik = useFormik({
     initialValues: {
-      date: '',
       time: '',
       status: 'Active',
+      doctorId: '', // This will be populated with the logged-in doctor's ID
     },
     validationSchema: Yup.object({
-      date: Yup.string().required('Date is required'),
       time: Yup.string().required('Time is required'),
       status: Yup.string().required('Status is required'),
     }),
 
-    onSubmit: async (values, { resetForm, setSubmitting }) => {
+
+    onSubmit: async (values, { resetForm }) => {
       try {
-        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/slot/add`, values, {
+        const data = { ...values, doctorId: doctor?.id }; // Add the logged-in doctor's ID to the payload
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/slot/add`, data, {
           headers: { 'x-auth-token': token },
         });
         toast.success('Slot added successfully');
@@ -84,10 +88,10 @@ export default function ManageSlotsPage() {
       } catch (error) {
         console.error('Error adding slot:', error);
         toast.error('Error adding slot');
-        setSubmitting(false);
       }
     },
   });
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-100 to-blue-300 py-12 px-4">
@@ -103,6 +107,7 @@ export default function ManageSlotsPage() {
           <p className="mt-4 text-lg">View and manage your appointment slots here.</p>
         </motion.div>
 
+
         {/* Slots Table Section */}
         <motion.div
           className="p-12"
@@ -115,7 +120,6 @@ export default function ManageSlotsPage() {
           <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
             <thead className="bg-blue-600 text-white">
               <tr>
-                <th className="py-3 px-4 text-left">Date</th>
                 <th className="py-3 px-4 text-left">Time</th>
                 <th className="py-3 px-4 text-left">Doctor</th>
                 <th className="py-3 px-4 text-left">Status</th>
@@ -124,15 +128,15 @@ export default function ManageSlotsPage() {
             <tbody>
               {slots.map((slot) => (
                 <tr key={slot.id} className={`border-b ${slot.status === 'Inactive' ? 'bg-gray-200' : ''}`}>
-                  <td className="py-3 px-4">{slot.date}</td>
                   <td className="py-3 px-4">{slot.time}</td>
-                  <td className="py-3 px-4">{getDoctorName(slot.doctorId)}</td>
+                  <td className="py-3 px-4">{doctor?.name || 'Unknown'}</td>
                   <td className="py-3 px-4">{slot.status}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </motion.div>
+
 
         {/* Add Slot Form Section */}
         <motion.div
@@ -145,19 +149,6 @@ export default function ManageSlotsPage() {
 
           <form onSubmit={formik.handleSubmit} className="space-y-6">
             <div className="flex flex-col md:flex-row md:space-x-4">
-              {/* Date Input */}
-              <input
-                type="date"
-                name="date"
-                value={formik.values.date}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                className={`flex-1 p-4 border rounded-lg ${formik.errors.date && formik.touched.date ? 'border-red-500' : ''}`}
-              />
-              {formik.errors.date && formik.touched.date && (
-                <div className="text-red-500">{formik.errors.date}</div>
-              )}
-
               {/* Time Input */}
               <input
                 type="time"
@@ -170,6 +161,17 @@ export default function ManageSlotsPage() {
               {formik.errors.time && formik.touched.time && (
                 <div className="text-red-500">{formik.errors.time}</div>
               )}
+
+              {/* Doctor Name (Read-only) */}
+              <input
+                type="text"
+                name="doctorName"
+                value={doctor?.name || ''}
+                readOnly
+                disabled
+                className="flex-1 p-4 border rounded-lg bg-gray-200"
+                placeholder="Fetching doctor..."
+              />
 
               {/* Status Dropdown */}
               <select

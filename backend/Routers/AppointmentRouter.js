@@ -3,7 +3,7 @@ const Model = require('../Models/AppointmentModel');
 const router = express.Router();
 
 
-router.post('/add', (req, res) => {
+router.post('/book', (req, res) => {
     console.log(req.body);
 
     new Model(req.body).save()
@@ -16,8 +16,6 @@ router.post('/add', (req, res) => {
         });
 
 });
-
-
 
 //getall
 router.get('/getall', (req, res) => {

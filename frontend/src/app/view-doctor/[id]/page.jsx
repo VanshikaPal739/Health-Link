@@ -4,45 +4,73 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import StarRatings from 'react-star-ratings';
-import { Description, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 
 const ViewDoctor = () => {
-  
-  const { id } = useParams(); // Get doctor ID from the URL
-  const [doctor, setDoctor] = useState(null); // State to hold doctor details
-  const [rating, setRating] = useState(3); // Default rating value
-  const [isOpen, setIsOpen] = useState(false)
+  const { id } = useParams();
+  const [doctor, setDoctor] = useState(null);
+  const [rating, setRating] = useState(3);
+  const [isOpen, setIsOpen] = useState(false);
+  const [slotList, setSlotList] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+  const [reviews, setReviews] = useState([]);
   const messageRef = useRef();
 
-  // Fetch token from localStorage once the component mounts
+
+  // Fetch token from localStorage
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  // Fetch doctor details based on the ID from URL params
+  // Fetch reviews for the doctor
+  const fetchReviews = async () => {
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/review/getbydoctor/${id}`);
+      setReviews(res.data); // Assuming reviews is an array in the response
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+
   useEffect(() => {
     if (id) {
       axios
         .get(`${process.env.NEXT_PUBLIC_API_URL}/doctor/getbyid/${id}`)
         .then((response) => {
-          setDoctor(response.data); // Set the fetched doctor details
-          setRating(response.data.rating || 3); // Set the initial rating from doctor data
+          setDoctor(response.data);
+          setRating(response.data.rating || 3);
+          fetchReviews();
+          fetchSlots();
         })
         .catch((err) => {
-          console.error("Error fetching doctor details:", err);
+          console.error('Error fetching doctor details:', err);
           toast.error('Failed to load doctor details');
         });
     }
   }, [id]);
 
-  // Submit review function
+
+  useEffect(() => {
+    const fetchSlots = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/slot/getall');
+        const data = await response.json();
+        setSlotList(data);
+      } catch (error) {
+        console.error('Error fetching slots:', error);
+        toast.error('Failed to load slots. Please try again later.');
+      }
+    };
+    fetchSlots();
+  }, []);
+
   const submitRating = () => {
     const comment = messageRef.current.value;
-
     if (!comment) {
-      toast.error("Please provide a comment!");
+      toast.error('Please provide a comment!');
       return;
     }
 
-    console.log("Submitting review with:", { doctor: id, rating, comment });
 
     axios
       .post(
@@ -52,47 +80,50 @@ const ViewDoctor = () => {
           rating: rating,
           comment: comment,
         },
-        {
-          headers: { 'x-auth-token': token },
-        }
+        { headers: { 'x-auth-token': token } }
       )
       .then(() => {
         toast.success('Review submitted');
-        messageRef.current.value = ''; // Clear the comment box
+        messageRef.current.value = '';
+        setRating(3); // Reset rating after submission
+        fetchReviews(); // Reload reviews after submitting a new one
       })
       .catch((err) => {
-        console.error("Error submitting review:", err.response || err);
-        toast.error('Some error occurred');
+        console.error('Error submitting review:', err);
+        if (err.response && err.response.status === 401) {
+          toast.error('Session expired. Please log in again.');
+        } else {
+          toast.error('An error occurred. Please try again later.');
+        }
       });
   };
 
-  // Show skeleton while loading doctor data
+  const bookAppointment = () => {
+    if (!selectedSlot) {
+      toast.error('Please select a slot');
+      return;
+    }
+
+    axios
+      .post(
+        `${process.env.NEXT_PUBLIC_API_URL}/appointment/book`,
+        { doctorId: id, slot: selectedSlot , time:selectedTime },
+        { headers: { 'x-auth-token': token } }
+      )
+      .then(() => {
+        toast.success('Appointment booked successfully!');
+        setIsOpen(false); // Close dialog after booking
+      })
+      .catch((err) => {
+        console.error('Error booking appointment:', err);
+        toast.error('Failed to book appointment');
+      });
+  };
+
   if (!doctor) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 animate-pulse">
-        <div className="max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="relative h-72 bg-gray-200">
-            <div className="w-full h-full rounded-t-lg opacity-80"></div>
-            <div className="absolute bottom-5 left-5 h-16 bg-gray-200 rounded w-1/2"></div>
-          </div>
-          <div className="p-6 md:flex md:space-x-6 bg-gray-50">
-            <div className="flex-1 space-y-4">
-              <div className="h-10 bg-gray-200 rounded w-full"></div>
-              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-8 bg-gray-200 rounded w-full"></div>
-              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-            </div>
-            <div className="flex-1 mt-6 md:mt-0">
-              <div className="h-10 bg-gray-200 rounded w-1/2 mb-4"></div>
-              <div className="mb-4 h-12 bg-gray-200 rounded w-full"></div>
-              <div className="h-24 bg-gray-200 rounded w-full"></div>
-              <div className="mt-3 h-10 bg-gray-200 rounded w-full"></div>
-              <div className="mt-6 h-10 bg-gray-200 rounded w-full"></div>
-            </div>
-          </div>
-        </div>
+        {/* Skeleton Loading */}
       </div>
     );
   }
@@ -107,13 +138,17 @@ const ViewDoctor = () => {
             alt={doctor.name}
             className="w-full h-full object-cover rounded-t-lg opacity-80"
           />
-          <h1 className="absolute bottom-5 left-5 text-4xl font-bold text-white drop-shadow-lg">{doctor.name}</h1>
+          <h1 className="absolute bottom-5 left-5 text-4xl font-bold text-white drop-shadow-lg">
+            {doctor.name}
+          </h1>
         </div>
 
         {/* Content Section */}
         <div className="p-6 md:flex md:space-x-6 bg-gray-50">
           <div className="flex-1 space-y-4">
-            <p className="text-2xl font-semibold text-gray-800">Specialization: <span className="font-normal text-gray-600">{doctor.specialization}</span></p>
+            <p className="text-2xl font-semibold text-gray-800">
+              Specialization: <span className="font-normal text-gray-600">{doctor.specialization}</span>
+            </p>
             <p className="text-lg text-gray-700">Experience: {doctor.experience} years</p>
             <p className="text-lg text-gray-700">Consultation Fee: ${doctor.fee}</p>
             <p className="text-lg text-gray-700">Address: {doctor.address}</p>
@@ -147,14 +182,90 @@ const ViewDoctor = () => {
               Submit Review
             </button>
 
+            {/* Displaying Reviews */}
+            <div className="bg-gray-700 rounded-lg shadow-lg p-4 mt-6">
+              <h2 className="text-2xl font-semibold mb-4">Reviews</h2>
+              {reviews.length > 0 ? (
+                reviews.map((review, index) => (
+                  <div key={index} className="mb-4 border-b border-gray-600 pb-2">
+                    <p className="text-lg text-gray-300">
+                      <strong>{review.user?.name}:</strong> {review.comment}
+                    </p>
+                    <StarRatings
+                      rating={review.rating}
+                      starRatedColor="gold"
+                      numberOfStars={5}
+                      starDimension="20px"
+                      starSpacing="3px"
+                    />
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400">No reviews yet.</p>
+              )}
+            </div>
+
+            {/* Book Appointment Button with Dialog */}
             <div className="mt-6 text-center">
-              <a
-                href={`/book-appointment/${id}`}
+              <button
+                onClick={() => setIsOpen(true)}
                 className="inline-block px-4 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition duration-300"
               >
                 Book Appointment
-              </a>
+              </button>
             </div>
+
+            {/* Dialog for Booking Confirmation */}
+            <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75"></div>
+              <div className="fixed inset-0 flex items-center justify-center p-4">
+                <DialogPanel className="max-w-lg mx-auto bg-white rounded-lg p-6 shadow-lg space-y-4">
+                  <DialogTitle className="text-lg font-semibold text-center">
+                    Clinic Appointment
+                  </DialogTitle>
+                  <p className="text-center text-gray-600">
+                    Book an appointment with <span className="font-bold">{doctor.name}</span>
+                  </p>
+
+                  {/* Doctor Details */}
+                  <div className="text-center space-y-2">
+                    <p className="text-lg text-gray-700">
+                      Specialization: <span className="font-semibold">{doctor.specialization}</span>
+                    </p>
+                    <p className="text-lg text-gray-700">
+                      Consultation Fee: <span className="font-semibold">${doctor.fee}</span>
+                    </p>
+                  </div>
+
+
+                  {/* Slot Dropdown */}
+                  <div>
+                    <select
+                      value={selectedSlot}
+                      onChange={(e) => setSelectedSlot(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="">Select a time slot</option>
+                      {slotList.map((slot) => (
+                        <option key={slot._id} value={slot.time}>
+                          {slot.time}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Confirmation Button */}
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      onClick={bookAppointment}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                      Confirm Booking
+                    </button>
+                  </div>
+                </DialogPanel>
+              </div>
+            </Dialog>
           </div>
         </div>
       </div>
