@@ -17,7 +17,6 @@ const ViewDoctor = () => {
   const [reviews, setReviews] = useState([]);
   const messageRef = useRef();
 
-
   // Fetch token from localStorage
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
@@ -31,7 +30,6 @@ const ViewDoctor = () => {
     }
   };
 
-
   useEffect(() => {
     if (id) {
       axios
@@ -40,7 +38,6 @@ const ViewDoctor = () => {
           setDoctor(response.data);
           setRating(response.data.rating || 3);
           fetchReviews();
-          fetchSlots();
         })
         .catch((err) => {
           console.error('Error fetching doctor details:', err);
@@ -49,20 +46,37 @@ const ViewDoctor = () => {
     }
   }, [id]);
 
-
-  useEffect(() => {
-    const fetchSlots = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/slot/getall');
-        const data = await response.json();
-        setSlotList(data);
-      } catch (error) {
-        console.error('Error fetching slots:', error);
-        toast.error('Failed to load slots. Please try again later.');
+// Fetch slots for the particular doctor
+const fetchSlotList = async () => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/slot/getbydoctorid/${id}`, // Updated endpoint
+      {
+        headers: {
+          'x-auth-token': token, // Pass token for authentication
+        },
       }
-    };
-    fetchSlots();
-  }, []);
+    );
+
+    if (response.data && Array.isArray(response.data)) {
+      setSlotList(response.data); // Ensure the response is an array and update state
+    } else {
+      throw new Error('Invalid response format'); // Handle unexpected response format
+    }
+  } catch (error) {
+    console.error('Error fetching slots:', error);
+    toast.error('Failed to fetch slots');
+    setSlotList([]); // Fallback to an empty array
+  }
+};
+
+// Use useEffect to call the fetchSlotList function
+useEffect(() => {
+  if (id && token) {
+    fetchSlotList(); // Fetch slots when doctor ID and token are available
+  }
+}, [id, token]);
+
 
   const submitRating = () => {
     const comment = messageRef.current.value;
@@ -70,7 +84,6 @@ const ViewDoctor = () => {
       toast.error('Please provide a comment!');
       return;
     }
-
 
     axios
       .post(
@@ -107,7 +120,7 @@ const ViewDoctor = () => {
     axios
       .post(
         `${process.env.NEXT_PUBLIC_API_URL}/appointment/book`,
-        { doctorId: id, slot: selectedSlot , time:selectedTime },
+        { doctorId: id, slot: selectedSlot, time: selectedTime },
         { headers: { 'x-auth-token': token } }
       )
       .then(() => {
@@ -237,7 +250,6 @@ const ViewDoctor = () => {
                     </p>
                   </div>
 
-
                   {/* Slot Dropdown */}
                   <div>
                     <select
@@ -246,12 +258,17 @@ const ViewDoctor = () => {
                       className="w-full p-2 border border-gray-300 rounded-md"
                     >
                       <option value="">Select a time slot</option>
-                      {slotList.map((slot) => (
-                        <option key={slot._id} value={slot.time}>
-                          {slot.time}
-                        </option>
-                      ))}
+                      {slotList.length > 0 ? (
+                        slotList.map((slot) => (
+                          <option key={slot._id} value={slot.time}>
+                            {slot.time}
+                          </option>
+                        ))
+                      ) : (
+                        <option disabled>No slots available</option>
+                      )}
                     </select>
+
                   </div>
 
                   {/* Confirmation Button */}

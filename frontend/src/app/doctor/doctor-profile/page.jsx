@@ -161,7 +161,8 @@ export default function DoctorProfilePage() {
           {/* Review 1 */}
           <div className="mb-4 border-b pb-4">
             <h3 className="font-semibold text-gray-800">Emily Johnson</h3>
-            <p className="text-gray-600">“Dr. Smith is an amazing cardiologist. He took the time to listen to my concerns and provided the best treatment options.”</p>
+            <p className="text-gray-600">“Dr. Smith is an amazing cardiologist. He took the time to 
+              listen to my concerns and provided the best treatment options.”</p>
           </div>
 
           {/* Review 2 */}

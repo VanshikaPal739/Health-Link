@@ -1,19 +1,9 @@
 'use client';
- 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Formik } from 'formik';
-
-// const DctorSchema = Yup.object({
-//   name: Yup.string().required('Name is required'),
-//   email: Yup.string().email('Invalid email').required('Email is required'),
-//   contact: Yup.string().required('Contact is required'),
-//   address: Yup.string().required('Address is required'),
-//   specialization: Yup.string().required('Specialization is required'),
-//   experience: Yup.number().min(0, 'Experience must be a positive number').required('Experience is required'),
-// });
 
 const AddDoctor = () => {
   const router = useRouter();
@@ -266,12 +256,7 @@ const AddDoctor = () => {
                 }
               }
 
-
-
-
-
-
-           
+         
             </Formik>
           ) : (<div> Loading...</div>)}
       </div>

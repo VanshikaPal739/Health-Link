@@ -100,6 +100,9 @@ const BrowseDoctors = () => {
             <option value="Cardiologist">Cardiologist</option>
             <option value="Dermatologist">Dermatologist</option>
             <option value="Pediatrician">Pediatrician</option>
+            <option value="Homopathy">Homopathy</option>
+            <option value="Dentist">Dentist</option>
+            <option value="Pulmonologist">Pulmonologist</option>
           </select>
         </motion.div>
 
@@ -150,4 +153,3 @@ const BrowseDoctors = () => {
 
 
 export default BrowseDoctors;
-
