@@ -3,11 +3,11 @@ const Model = require('../Models/UserModel');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const router = express.Router();
+const verifyToken = require('../Middlewares/verifytoken');
 
 
 router.post('/add', (req, res) => {
     console.log(req.body);
-
     new Model(req.body).save()
         .then((result) => {
             res.status(200).json(result);
@@ -18,7 +18,6 @@ router.post('/add', (req, res) => {
         });
 
 });
-
 
 
 //getall
@@ -33,10 +32,6 @@ router.get('/getall', (req, res) => {
 });
 
 
-
-
-
-
 router.get('/getbyemail/:email', (req, res) => {
     Model.findOne({ email: req.params.email })
         .then((result) => {
@@ -48,6 +43,8 @@ router.get('/getbyemail/:email', (req, res) => {
 });
 
 
+
+//getbyid
 router.get('/getbyid/:id', (req, res) => {
     Model.findById(req.params.id)
         .then((result) => {
@@ -59,6 +56,7 @@ router.get('/getbyid/:id', (req, res) => {
 });
 
 
+//delete
 router.delete('/delete/:id', (req, res) => {
     Model.findByIdAndDelete(req.params.id)
         .then((result) => {
@@ -68,7 +66,6 @@ router.delete('/delete/:id', (req, res) => {
             res.status(500).json(err);
         });
 });
-
 
 
 //update
@@ -82,6 +79,21 @@ router.put('/update/:id', (req, res) => {
         });
 });
 
+
+router.get('/get-detail', verifyToken, (req, res) => {
+    Model.findById(req.user._id)
+
+        .then((result) => {
+            res.status(200).json(result);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+});
+
+
+
+//authenticate
 router.post('/authenticate', (req, res) => {
     Model.findOne(req.body)
         .then((result) => {

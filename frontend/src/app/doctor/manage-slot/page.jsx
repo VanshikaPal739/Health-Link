@@ -10,7 +10,7 @@ export default function ManageSlotsPage() {
   const [slots, setSlots] = useState([]);
   const [doctor, setDoctor] = useState(null);
   const [token, setToken] = useState(null);
-  const runOnce = useRef(false); // Ensures fetching happens only once
+  const runOnce = useRef(false);
 
   // Retrieve token from localStorage
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function ManageSlotsPage() {
       const res = await axios.get('http://localhost:5000/doctor/getbyid', {
         headers: { 'x-auth-token': token },
       });
-      setDoctor(res.data); // Update state with logged-in doctor details
+      setDoctor(res.data);
     } catch (error) {
       console.error('Error fetching logged-in doctor:', error);
       toast.error('Failed to fetch logged-in doctor details');
@@ -39,8 +39,6 @@ export default function ManageSlotsPage() {
       const res = await axios.get(`http://localhost:5000/slot/getbydoctor/${doctor.id}`, {
         headers: { 'x-auth-token': token },
       });
-      console.log('Slots:', res.data);
-
       setSlots(res.data);
     } catch (error) {
       console.error('Error fetching slots:', error);
@@ -66,25 +64,26 @@ export default function ManageSlotsPage() {
   const formik = useFormik({
     initialValues: {
       time: '',
+      period: 'AM',
+      date: '',
       status: 'Active',
     },
     validationSchema: Yup.object({
       time: Yup.string().required('Time is required'),
+      period: Yup.string().required('Period is required'),
+      date: Yup.string().required('Date is required'),
       status: Yup.string().required('Status is required'),
     }),
 
     onSubmit: async (values, { resetForm }) => {
       try {
-        const data = { ...values, doctorId: doctor?.id }; // Add the logged-in doctor's ID to the payload
+        const data = { ...values, doctorId: doctor?.id };
         const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/slot/add`, data, {
           headers: { 'x-auth-token': token },
         });
         const newSlot = res.data;
 
-        // Update slots immediately after adding
         setSlots((prevSlots) => [...prevSlots, newSlot]);
-        console.log('New Slot Added:', newSlot);
-
         toast.success('Slot added successfully');
         resetForm();
       } catch (error) {
@@ -128,10 +127,27 @@ export default function ManageSlotsPage() {
                 onBlur={formik.handleBlur}
                 className={`flex-1 p-4 border rounded-lg ${formik.errors.time && formik.touched.time ? 'border-red-500' : ''}`}
               />
-              {formik.errors.time && formik.touched.time && (
-                <div className="text-red-500">{formik.errors.time}</div>
-              )}
-
+              {/* Period Dropdown */}
+              <select
+                name="period"
+                value={formik.values.period}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                className="p-4 border rounded-lg"
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+              {/* Date Input */}
+              <input
+                type="date"
+                name="date"
+                value={formik.values.date}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                className={`flex-1 p-4 border rounded-lg ${formik.errors.date && formik.touched.date ? 'border-red-500' : ''}`}
+              />
+              
               {/* Status Dropdown */}
               <select
                 name="status"
@@ -169,6 +185,8 @@ export default function ManageSlotsPage() {
             <thead className="bg-blue-600 text-white">
               <tr>
                 <th className="py-3 px-4 text-left">Time</th>
+                <th className="py-3 px-4 text-left">Period</th>
+                <th className="py-3 px-4 text-left">Date</th>
                 <th className="py-3 px-4 text-left">Status</th>
               </tr>
             </thead>
@@ -176,6 +194,8 @@ export default function ManageSlotsPage() {
               {slots.map((slot) => (
                 <tr key={slot.id} className={`border-b ${slot.status === 'Inactive' ? 'bg-gray-200' : ''}`}>
                   <td className="py-3 px-4">{slot.time}</td>
+                  <td className="py-3 px-4">{slot.period}</td>
+                  <td className="py-3 px-4">{slot.date}</td>
                   <td className="py-3 px-4">{slot.status}</td>
                 </tr>
               ))}

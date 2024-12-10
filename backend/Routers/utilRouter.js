@@ -1,5 +1,7 @@
 const nodemailer = require("nodemailer");
 const express = require('express');
+const jwt = require('jsonwebtoken');
+// const Model = require('../Models/usermodel.js');
 require('dotenv').config();
 const generatedOTP = {};
 

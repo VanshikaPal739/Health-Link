@@ -1,10 +1,15 @@
 const express = require('express');
 const Model = require('../Models/AppointmentModel');
+const verifyToken = require('../middlewares/verifytoken');
 const router = express.Router();
 
 
-router.post('/book', (req, res) => {
+router.post('/book', verifyToken, (req, res) => {
+    const { _id } = req.user;
     console.log(req.body);
+
+    req.body.patient = _id;
+
     new Model(req.body).save()
         .then((result) => {
             res.status(200).json(result);
@@ -28,7 +33,17 @@ router.get('/getall', (req, res) => {
 });
 
 
-  
+router.get('/getbyuser', verifyToken, (req, res) => {
+    Model.findById(req.user._id)
+
+        .then((result) => {
+            res.status(200).json(result);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+});
+
 
 router.get('/getbyemail/:email', (req, res) => {
     Model.findOne({ email: req.params.email })
@@ -90,5 +105,5 @@ router.put('/update/:id', (req, res) => {
 
 
 
-    
+
 module.exports = router;

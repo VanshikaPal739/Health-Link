@@ -1,4 +1,5 @@
 'use client';
+import { IconWorld } from "@tabler/icons-react";
 import React from "react";
 
 const HomePage = () => {
@@ -53,6 +54,7 @@ const HomePage = () => {
     <div className="absolute inset-0 bg-black/40"></div>
   </div>
 
+
   {/* Content on top of the image */}
   <div className="absolute top-0 left-0 right-0 h-full flex items-center px-6 md:px-12 lg:px-20">
     <div className="text-white space-y-6 max-w-2xl">
@@ -75,6 +77,7 @@ const HomePage = () => {
       </div>
     </div>
   </div>
+
 
   {/* Features Section */}
   <div className="absolute bottom-0 left-0 right-0 px-6 md:px-12 lg:px-20 transform translate-y-1/2">
@@ -139,10 +142,6 @@ const HomePage = () => {
     </section>
   </div>
 </header>
-
-
-      
-
 
 <section className="bg-gray-50 py-40">
       <div className="container mx-auto px-8">       
@@ -212,7 +211,6 @@ const HomePage = () => {
       </div>
     </section>
 
-
       {/* Footer */}
       <footer className="bg-blue-800 text-white py-8 ">
         <div className="container mx-auto text-center">
@@ -224,3 +222,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
