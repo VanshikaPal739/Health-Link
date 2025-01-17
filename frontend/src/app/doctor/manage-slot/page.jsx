@@ -18,6 +18,7 @@ export default function ManageSlotsPage() {
     setToken(savedToken);
   }, []);
 
+  
   // Fetch logged-in doctor's details
   const fetchLoggedInDoctor = async () => {
     try {

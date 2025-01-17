@@ -7,9 +7,7 @@ const router = express.Router();
 router.post('/book', verifyToken, (req, res) => {
     const { _id } = req.user;
     console.log(req.body);
-
     req.body.patient = _id;
-
     new Model(req.body).save()
         .then((result) => {
             res.status(200).json(result);
@@ -19,6 +17,7 @@ router.post('/book', verifyToken, (req, res) => {
             res.status(500).json(err);
         });
 });
+
 
 
 //getall
@@ -31,6 +30,7 @@ router.get('/getall', (req, res) => {
             res.status(500).json(err);
         });
 });
+
 
 
 router.get('/getbyuser', verifyToken, (req, res) => {
@@ -57,8 +57,19 @@ router.get('/getbyemail/:email', (req, res) => {
 
 
 
-router.get('/getbydoctor/:doctor', (req, res) => {
-    Model.findById(req.params.id)
+router.get('/getbydoctor/:id', (req, res) => {
+    Model.find({doctor : req.params.id})
+        .then((result) => {
+            res.status(200).json(result);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+});
+
+
+router.get('/getappointment', verifyToken, (req, res) => {
+    Model.find({doctor : req.user._id}).populate('patient').populate('slot')
         .then((result) => {
             res.status(200).json(result);
         }).catch((err) => {
@@ -78,6 +89,7 @@ router.get('/getbyid/:id', (req, res) => {
             res.status(500).json(err);
         });
 });
+
 
 
 router.delete('/delete/:id', (req, res) => {

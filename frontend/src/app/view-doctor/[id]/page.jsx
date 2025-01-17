@@ -13,37 +13,29 @@ const ViewDoctor = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [slotList, setSlotList] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
   const [reviews, setReviews] = useState([]);
   const messageRef = useRef();
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
 
-  // Fetch doctor details and reviews
   const fetchDoctorDetails = async () => {
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/doctor/getbyid/${id}`);
       setDoctor(response.data);
       setRating(response.data.rating || 3);
     } catch (err) {
-      console.error('Error fetching doctor details:', err);
       toast.error('Failed to load doctor details');
     }
   };
-
 
   const fetchReviews = async () => {
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/review/getbydoctor/${id}`);
       setReviews(response.data);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      toast.error('Failed to fetch reviews');
     }
   };
-
 
   const fetchSlotList = async () => {
     try {
@@ -52,11 +44,9 @@ const ViewDoctor = () => {
       });
       setSlotList(response.data);
     } catch (error) {
-      console.error('Error fetching slots:', error);
       toast.error('Failed to fetch slots');
     }
   };
-
 
   const submitRating = async () => {
     const comment = messageRef.current.value;
@@ -75,11 +65,9 @@ const ViewDoctor = () => {
       setRating(3);
       fetchReviews();
     } catch (err) {
-      console.error('Error submitting review:', err);
       toast.error('Failed to submit review');
     }
   };
-
 
   const bookAppointment = async () => {
     if (!selectedSlot) {
@@ -93,19 +81,16 @@ const ViewDoctor = () => {
     }
 
     try {
-      await axios.post(
-        ` ${process.env.NEXT_PUBLIC_API_URL}/appointment/book`,
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/appointment/book`,
         { doctor: id, slot: selectedSlot },
         { headers: { 'x-auth-token': token } }
       );
       toast.success('Appointment booked successfully!');
       setIsOpen(false);
     } catch (err) {
-      console.error('Error booking appointment:', err);
       toast.error('Failed to book appointment');
     }
   };
-
 
   useEffect(() => {
     if (id) {
@@ -120,120 +105,167 @@ const ViewDoctor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4">
-      <div className="max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Doctor Info */}
-        <div className="relative h-72 bg-gradient-to-r from-green-400 to-blue-500">
-          <img
-            src={doctor.image || 'https://via.placeholder.com/250'}
-            alt={doctor.name}
-            className="w-full h-full object-cover opacity-80"
-          />
-          <h1 className="absolute bottom-5 left-5 text-4xl font-bold text-white">{doctor.name}</h1>
-        </div>
-        {/* Details */}
-        <div className="p-6 flex flex-col md:flex-row md:space-x-6">
-          <div className="flex-1">
-            <p className="text-xl">Specialization: {doctor.specialization}</p>
-            <p className="text-xl">Experience: {doctor.experience} years</p>
-            <p className="text-xl">Fee: ${doctor.fee}</p>
-            <p className="text-xl">Bio: {doctor.bio}</p>
+    <div className="min-h-screen bg-gray-100 py-8 px-4">
+      {/* Header Section */}
+      <header className="bg-blue-600 py-4 w-full">
+        <div className="container mx-auto flex items-center justify-between px-4">
+          {/* Logo Section */}
+          <div className="flex items-center space-x-2">
+          
+            <h1 className="text-white text-2xl font-bold">HealthCareLink</h1>
           </div>
-          {/* Review Section */}
-          <div className="flex-1">
-            <h2 className="text-2xl">Leave a Review</h2>
-            <StarRatings
-              rating={rating}
-              changeRating={setRating}
-              numberOfStars={5}
-              starRatedColor="gold"
+
+          {/* Navigation Section */}
+          <nav className="flex space-x-6">
+            <a href="#" className="text-white text-lg hover:underline">
+              Find Doctors
+            </a>
+            <a href="#" className="text-white text-lg hover:underline">
+              Video Consult
+            </a>
+            <a href="#" className="text-white text-lg hover:underline">
+              Surgeries
+            </a>
+          </nav>
+
+          {/* Search Bar Section */}
+          <div className="flex items-center bg-white rounded-md overflow-hidden shadow-md w-2/5">
+            <input
+              type="text"
+              className="w-full px-4 py-2 text-gray-700 focus:outline-none"
+              placeholder="Search doctors, clinics, hospitals, etc."
             />
-            <textarea ref={messageRef} placeholder="Write your review..." className="w-full mt-3"></textarea>
-            <button onClick={submitRating} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-              Submit
+            <button className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700">
+              Search
             </button>
-            {/* Reviews */}
-            <div className="mt-4">
-              <h2 className="text-2xl">Reviews</h2>
-              {reviews.map((review, i) => (
-                <div key={i}>
-                  <p>{review.user?.name}: {review.comment}</p>
-                  <StarRatings
-                    rating={review.rating}
-                    numberOfStars={5}
-                    starRatedColor="gold"
-                    starDimension="20px"
-                  />
-                </div>
-              ))}
-            </div>
+          </div>
+
+          {/* Auth Links */}
+          <div className="flex space-x-4 items-center">
+            <a href="#" className="text-white text-lg hover:underline">
+              Login / Signup
+            </a>
           </div>
         </div>
-        {/* Book Appointment */}
-        <div className="p-6">
-          <button onClick={() => setIsOpen(true)} className="bg-green-500 text-white px-4 py-2 rounded">
+      </header>
+
+      <div className="min-h-screen flex flex-col items-center bg-gray-100">
+  {/* Main Content Wrapper */}
+  <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 py-8 px-4">
+    {/* Left Side - Doctor Information */}
+    <div className="md:col-span-2 bg-white rounded-lg shadow-md p-8">
+      <div className="flex items-center">
+        {/* Doctor Image */}
+        <img
+          src={doctor.image || 'https://via.placeholder.com/150'}
+          alt={doctor.name}
+          className="w-40 h-40 rounded-full border border-gray-300"
+        />
+        {/* Doctor Details */}
+        <div className="ml-8">
+          <h1 className="text-3xl font-semibold">{doctor.name}</h1>
+          <p className="text-lg text-gray-500 mt-2">{doctor.specialization}</p>
+          <p className="mt-2 text-gray-700">{doctor.bio}</p>
+          <p className="mt-2 text-gray-600">Experience: {doctor.experience} years</p>
+          <p className="mt-2 text-gray-600">Consultation Fee: ${doctor.fee}</p>
+          <button
+            onClick={() => setIsOpen(true)}
+            className="mt-6 bg-green-500 text-white px-6 py-2 rounded-lg shadow hover:bg-green-600"
+          >
             Book Appointment
           </button>
+               {/* Booking Dialog */}
+<Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-30"></div>
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <DialogPanel className="bg-white rounded-lg p-6 shadow-lg max-w-md w-full">
+            <DialogTitle className="text-lg font-bold text-center">Book Appointment</DialogTitle>
+            <p className="text-gray-600 text-center mt-2">
+              Select a slot to book an appointment with <strong>{doctor.name}</strong>.
+            </p>
+            <div className="mt-4">
+              <select
+                value={selectedSlot}
+                onChange={(e) => setSelectedSlot(e.target.value)}
+                className="w-full border rounded-md p-2"
+              >
+                <option value="">Select a slot</option>
+                {slotList.length > 0 ? (
+                  slotList.map((slot) => (
+                    <option key={slot._id} value={slot._id}>
+                      {slot.time} {slot.period} on {slot.date}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No slots available</option>
+                )}
+              </select>
+            </div>
+            <div className="mt-6 text-center">
+              <button 
+                onClick={bookAppointment} 
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600"
+              >
+                Confirm Booking
+              </button>
+            </div>
+          </DialogPanel>
         </div>
-        {/* Dialog for Booking Confirmation */}
-        <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75"></div>
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <DialogPanel className="max-w-lg mx-auto bg-white rounded-lg p-6 shadow-lg space-y-4">
-              <DialogTitle className="text-lg font-semibold text-center">
-                Clinic Appointment
-              </DialogTitle>
-              <p className="text-center text-gray-600">
-                Book an appointment with <span className="font-bold">{doctor.name}</span>
-              </p>
-
-              {/* Doctor Details */}
-              <div className="text-center space-y-2">
-                <p className="text-lg text-gray-700">
-                  Specialization: <span className="font-semibold">{doctor.specialization}</span>
-                </p>
-                <p className="text-lg text-gray-700">
-                  Consultation Fee: <span className="font-semibold">${doctor.fee}</span>
-                </p>
-              </div>
-
-              {/* Slot Dropdown */}
-              <div>
-                <select
-                  value={selectedSlot}
-                  onChange={(e) => {
-                    setSelectedSlot(e.target.value);
-                    setSelectedTime(e.target.value);
-                  }}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Select date and time slot</option>
-                  {slotList.length > 0 ? (
-                    slotList.map((slot) => (
-                      <option key={slot._id} value={slot._id}>
-                        {slot.time} {slot.period} on {slot.date}
-                      </option>
-                    ))
-                  ) : (
-                    <option disabled>No slots available</option>
-                  )}
-                </select>
-
-              </div>
-
-              {/* Confirmation Button */}
-              <div className="mt-4 flex justify-center">
-                <button
-                  onClick={bookAppointment}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Confirm Booking
-                </button>
-              </div>
-            </DialogPanel>
-          </div>
-        </Dialog>
+      </Dialog>
+        </div>
       </div>
+    </div>
+
+    {/* Right Side - Reviews and Rating */}
+    <div className="space-y-8">
+      {/* Leave a Review */}
+      <div className="bg-white rounded-lg shadow-md p-8">
+        <h2 className="text-2xl font-semibold mb-4">Leave a Review</h2>
+        <StarRatings
+          rating={rating}
+          changeRating={setRating}
+          numberOfStars={5}
+          starRatedColor="gold"
+          starDimension="30px"
+          starSpacing="5px"
+        />
+        <textarea
+          ref={messageRef}
+          placeholder="Write your review..."
+          className="w-full border rounded-md p-3 mt-4"
+        ></textarea>
+        <button
+          onClick={submitRating}
+          className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-600"
+        >
+          Submit Review
+        </button>
+      </div>
+
+      {/* Patient Stories */}
+      <div className="bg-white rounded-lg shadow-md p-8">
+        <h2 className="text-2xl font-semibold mb-4">Patient Stories</h2>
+        {reviews.length > 0 ? (
+          reviews.map((review, index) => (
+            <div key={index} className="mb-6 text-left">
+              <p className="font-semibold">{review.user?.name || 'Anonymous'}</p>
+              <p className="text-gray-600">{review.comment}</p>
+              <StarRatings
+                rating={review.rating}
+                numberOfStars={5}
+                starDimension="20px"
+                starSpacing="4px"
+                starRatedColor="gold"
+              />
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-600">No reviews available.</p>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
     </div>
   );
 };
