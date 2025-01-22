@@ -9,6 +9,7 @@ const mySchema = new Schema({
     status: { type: String, default: 'booked' },
     report: { type: String, default: '' },
     prescription: { type: String, default: '' },
+    prescribedTest: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now }
 });
 

@@ -1,12 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function ManageAppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
   const [token, setToken] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -30,6 +33,8 @@ export default function ManageAppointmentsPage() {
       fetchAppointments();
     }
   }, [token]);
+
+ 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 py-12 px-4">
@@ -62,7 +67,6 @@ export default function ManageAppointmentsPage() {
                 <th className="py-3 px-4 text-left">Time</th>
                 <th className="py-3 px-4 text-left">Status</th>
                 <th className="py-3 px-4 text-left">Report</th>
-                <th className="py-3 px-4 text-left">Prescription</th>
                 <th className="py-3 px-4 text-left">Actions</th>
               </tr>
             </thead>
@@ -72,31 +76,16 @@ export default function ManageAppointmentsPage() {
                   <td className="py-3 px-4">{appointment.patient?.name || 'N/A'}</td>
                   <td className="py-3 px-4">{appointment.slot?.date || 'N/A'}</td>
                   <td className="py-3 px-4">{appointment.slot?.time || 'N/A'}</td>
+                  <td className="py-3 px-4">{appointment.prescription || 'N/A'}</td>
+                  <td className="py-3 px-4">{appointment.prescribedTest || 'N/A'}</td>
                   <td className="py-3 px-4 capitalize">{appointment.status}</td>
                   <td className="py-3 px-4">
-                    {appointment.status === 'booked' && appointment.report ? (
-                      <a
-                        href={appointment.report}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
+                    {appointment.status === 'booked' ? (
+                    <Link href={"/doctor/edit-appointment/"+appointment._id}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                       >
-                        View Report
-                      </a>
-                    ) : (
-                      'N/A'
-                    )}
-                  </td>
-                  <td className="py-3 px-4">
-                    {appointment.status === 'booked' && appointment.prescription ? (
-                      <a
-                        href={appointment.prescription}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                      >
-                        View Prescription
-                      </a>
+                        View/Edit Appointment
+                        </Link>
                     ) : (
                       'N/A'
                     )}
