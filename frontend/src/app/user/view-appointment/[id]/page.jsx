@@ -15,7 +15,10 @@ export default function ViewAppointmentPage() {
       const response = await axios.get(`http://localhost:5000/appointment/getbyid/${id}`, {
         headers: { 'x-auth-token': token },
       });
-      setAppointments(response.data); // Set the array of appointments
+      
+      const data = response.data;
+      // If the data is an object, wrap it in an array
+      setAppointments(Array.isArray(data) ? data : [data]);
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch appointment details.', error);

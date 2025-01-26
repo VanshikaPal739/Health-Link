@@ -105,8 +105,44 @@ const ViewDoctor = () => {
   }
 
   return (
+    
     <div className="min-h-screen bg-gray-100 py-8 px-4">
-      {/* Header Section */}
+      <div className="flex h-screen">
+      {/* Left-Side Navbar */}
+      <nav className="w-64 bg-blue-600 text-white flex flex-col p-4">
+        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+        <ul className="space-y-4">
+          <li>
+            <a href="#home" className="hover:bg-blue-500 p-2 rounded block">
+              Home
+            </a>
+          </li>
+          <li>
+            <a href="#profile" className="hover:bg-blue-500 p-2 rounded block">
+              Profile
+            </a>
+          </li>
+          <li>
+            <a href="#settings" className="hover:bg-blue-500 p-2 rounded block">
+              Settings
+            </a>
+          </li>
+          <li>
+            <a href="#help" className="hover:bg-blue-500 p-2 rounded block">
+              Help
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      {/* Main Content */}
+      <div className="flex-1 bg-gray-100 p-8">
+        <h2 className="text-3xl font-semibold mb-4">Welcome to the Page</h2>
+        <p className="text-lg">
+          This is the main content area. You can add your components, tables,
+          or other elements here.
+        </p>
+         {/* Header Section */}
       <header className="bg-blue-600 py-4 w-full">
         <div className="container mx-auto flex items-center justify-between px-4">
           {/* Logo Section */}
@@ -266,6 +302,9 @@ const ViewDoctor = () => {
     </div>
   </div>
 </div>
+      </div>
+    </div>
+     
     </div>
   );
 };
