@@ -9,7 +9,9 @@ import {
 } from "@google/generative-ai";
 
 // Directly pass the Gemini API key
-const genAI = new GoogleGenerativeAI("your-gemini-api-key-here");
+const genAI = new GoogleGenerativeAI(
+  process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+);
 
 const Recommend = () => {
   const [recommendation, setRecommendation] = useState("");
@@ -32,22 +34,19 @@ const Recommend = () => {
     }),
     onSubmit: async (values) => {
       setLoading(true);
+      let result;
       try {
         const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const result = await model.generateContent({
-          prompt: `
-            Provide personalized health recommendations based on the following details:
-            - Age: ${values.age}
-            - Weight: ${values.weight}
-            - Gender: ${values.gender}
-            - Activity Level: ${values.activityLevel}
-            - Health Goals: ${values.healthGoals}.
-            Suggest a diet, exercise routine, and lifestyle tips to achieve these goals.
-          `,
-          temperature: 0.9,
-          topP: 0.95,
-          maxOutputTokens: 8192,
-          responseMimeType: "text/plain",
+        result = await model.generateContent({
+          history: [
+            {
+              role: "user",
+              parts: [
+                { text: "Analyze the health report and provide personalized health recommendations according to their age, weight and gender and the values are "+JSON.stringify(values) },
+              ],
+            },
+          ],
+         
         });
 
         const response = result.response.text();
@@ -57,62 +56,18 @@ const Recommend = () => {
         setRecommendation("Failed to generate recommendations. Please try again.");
       } finally {
         setLoading(false);
+        console.log(result);
       }
     },
   });
 
-  const uploadHealthReport = async (e) => {
-    const file = e.target.files[0];
-    const fd = new FormData();
-    fd.append("healthReport", file);
-
-    try {
-      const res = await fetch("https://mern-workshop.onrender.com/uploadfile", {
-        method: "POST",
-        body: fd,
-      });
-
-      if (res.status === 200) {
-        console.log("Health report uploaded successfully.");
-        const data = await res.json();
-        const { file } = data;
-        processUploadedFile(file);
-      }
-    } catch (error) {
-      console.error("File upload failed.", error);
-    }
-  };
-
-  const processUploadedFile = async ({ uri, mimeType }) => {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
-    const chatSession = model.startChat({
-      generationConfig: {
-        temperature: 0.9,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 8192,
-        responseMimeType: "text/plain",
-      },
-      history: [
-        {
-          role: "user",
-          parts: [
-            { text: "Analyze the health report and provide personalized health recommendations." },
-          ],
-        },
-      ],
-    });
-
-    const result = await chatSession.sendMessage("Analyze this file for health recommendations.");
-    setRecommendation(result.response.text());
-  };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-md mt-8">
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-md mt-32">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">
         Personalized Health Recommendations
       </h1>
+
 
       {/* Formik Form */}
       <form onSubmit={formik.handleSubmit} className="space-y-4">
@@ -131,6 +86,7 @@ const Recommend = () => {
           ) : null}
         </div>
 
+
         <div>
           <input
             type="number"
@@ -145,6 +101,7 @@ const Recommend = () => {
             <p className="text-red-500 text-sm">{formik.errors.weight}</p>
           ) : null}
         </div>
+
 
         <div>
           <select
@@ -164,6 +121,7 @@ const Recommend = () => {
           ) : null}
         </div>
 
+
         <div>
           <input
             type="text"
@@ -178,6 +136,7 @@ const Recommend = () => {
             <p className="text-red-500 text-sm">{formik.errors.activityLevel}</p>
           ) : null}
         </div>
+
 
         <div>
           <input
@@ -194,6 +153,7 @@ const Recommend = () => {
           ) : null}
         </div>
 
+
         <button
           type="submit"
           className="mt-4 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
@@ -205,7 +165,7 @@ const Recommend = () => {
      
       {/* Recommendations */}
       {loading ? (
-        <p className="text-center text-blue-500 mt-4">Generating recommendations...</p>
+        <p className="text-center text-blue-500 mt-32">Generating recommendations...</p>
       ) : (
         recommendation && (
           <div className="mt-6 p-4 bg-gray-100 rounded-md">
@@ -219,8 +179,6 @@ const Recommend = () => {
 };
 
 export default Recommend;
-
-
 
 
 
