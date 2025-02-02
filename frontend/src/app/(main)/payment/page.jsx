@@ -1,37 +1,45 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const PaymentPage = ({ doctorId, doctorName }) => {
-    const [paymentMode, setPaymentMode] = useState(''); // Added for payment mode
+    const [paymentMode, setPaymentMode] = useState('');
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        // Load Razorpay script dynamically
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
+    }, []);
 
     const handlePayment = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            // Backend request to create a payment order
-            const { data } = await axios.post('/api/create-order', {
-                amount: amount * 100, // Convert amount to paise for Razorpay
+            const response = await axios.post("http://localhost:5000/create-order", {
+                amount: Number(amount) * 100, // Convert to paise
                 doctorId,
                 doctorName,
             });
 
+            const { order } = response.data;
+
             const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Razorpay Key ID
-                amount: data.amount,
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+                amount: order.amount,
                 currency: 'INR',
                 name: 'HealthCareConnect',
                 description: `Payment to Dr. ${doctorName}`,
-                order_id: data.id,
+                order_id: order.id,
                 handler: async (response) => {
-                    const verifyResponse = await axios.post('/api/verify-payment', {
+                    const verifyResponse = await axios.post("http://localhost:5000/verify-payment", {
                         ...response,
                         doctorId,
-                        amount,
+                        amount: order.amount,
                     });
 
                     if (verifyResponse.data.success) {
@@ -48,10 +56,7 @@ const PaymentPage = ({ doctorId, doctorName }) => {
                 theme: {
                     color: '#3399cc',
                 },
-                method: paymentMode === 'UPI' ? 'upi' : 'card', // Dynamic payment method
-                upi: {
-                    vpa: '', // If empty, it will allow the user to enter their UPI ID.
-                },
+                method: paymentMode.toLowerCase(), // Razorpay supports 'card', 'upi', etc.
             };
 
             const rzp = new window.Razorpay(options);
@@ -71,7 +76,7 @@ const PaymentPage = ({ doctorId, doctorName }) => {
                 <div className="mb-4">
                     <label className="block font-semibold">Amount:</label>
                     <input
-                        type="text"
+                        type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         required
@@ -92,37 +97,6 @@ const PaymentPage = ({ doctorId, doctorName }) => {
                         <option value="UPI">UPI</option>
                     </select>
                 </div>
-                {paymentMode === 'Card' && (
-                    <>
-                        <div className="mb-4">
-                            <label className="block font-semibold">Card Number:</label>
-                            <input
-                                type="text"
-                                placeholder="Enter card number"
-                                required
-                                className="w-full px-3 py-2 border rounded-lg"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block font-semibold">Expiry Date:</label>
-                            <input
-                                type="text"
-                                placeholder="MM/YY"
-                                required
-                                className="w-full px-3 py-2 border rounded-lg"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block font-semibold">CVV:</label>
-                            <input
-                                type="text"
-                                placeholder="Enter CVV"
-                                required
-                                className="w-full px-3 py-2 border rounded-lg"
-                            />
-                        </div>
-                    </>
-                )}
                 <button
                     type="submit"
                     className={`w-full py-2 text-white rounded-lg ${loading ? 'bg-gray-500' : 'bg-blue-500 hover:bg-blue-600'}`}
@@ -136,3 +110,4 @@ const PaymentPage = ({ doctorId, doctorName }) => {
 };
 
 export default PaymentPage;
+
