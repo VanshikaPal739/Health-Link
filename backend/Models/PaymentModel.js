@@ -1,35 +1,20 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference to the User model
-        required: true,
-    },
-    doctorId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Doctor', // Reference to the Doctor model
-        required: true,
-    },
+    userId: {type: Types.ObjectId, ref: 'User', required: true },
+
+    doctorId: { type: Types.ObjectId, ref: 'Doctor', required: true },
     amount: {type: Number,required: true,},
 
     paymentStatus: {type: String,
         enum: ['Pending', 'Success', 'Failed'],
         default: 'Pending',
     },
-    transactionId: {
-        type: String,
-        required: true,
-        unique: true,
+    transactionId: { type: String, required: true, unique: true },
+    paymentMethod: {type: String, required: true,
+        enum: ['Card', 'UPI', 'Net Banking', 'Wallet'],  
     },
-    paymentMethod: {type: String,
-        enum: ['Card', 'UPI', 'Net Banking', 'Wallet'],
-        required: true,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    }
+    createdAt: {type: Date, default: Date.now,}
 });
 
 const Payment = mongoose.model('Payment', paymentSchema);

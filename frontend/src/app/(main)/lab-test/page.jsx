@@ -42,8 +42,7 @@ const LabTests = () => {
     { name: 'Comprehensive Active Professional Health Checkup', price: '₹4399', originalPrice: '₹5500', discount: '20% off', testsIncluded: '111 tests', targetAge: '41 - 60 years' }
   ];
 
-
-
+  
   // Filter the tests and checkup packages based on the search query
   const filteredTests = topBookedTests.filter(test => test.name.toLowerCase().includes(searchQuery));
   const filteredPackages = healthCheckupPackages.filter(packageItem => packageItem.name.toLowerCase().includes(searchQuery));

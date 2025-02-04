@@ -19,8 +19,7 @@ const PaymentPage = ({ doctorId, doctorName }) => {
         e.preventDefault();
         setLoading(true);
 
-        try {
-            const response = await axios.post("http://localhost:5000/create-order", {
+        try {const response = await axios.post("http://localhost:5000/create-order", {
                 amount: Number(amount) * 100, // Convert to paise
                 doctorId,
                 doctorName,
