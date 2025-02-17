@@ -142,48 +142,7 @@ const ViewDoctor = () => {
           This is the main content area. You can add your components, tables,
           or other elements here.
         </p>
-         {/* Header Section */}
-      <header className="bg-blue-600 py-4 w-full">
-        <div className="container mx-auto flex items-center justify-between px-4">
-          {/* Logo Section */}
-          <div className="flex items-center space-x-2">
-          
-            <h1 className="text-white text-2xl font-bold">HealthCareLink</h1>
-          </div>
-
-          {/* Navigation Section */}
-          <nav className="flex space-x-6">
-            <a href="#" className="text-white text-lg hover:underline">
-              Find Doctors
-            </a>
-            <a href="#" className="text-white text-lg hover:underline">
-              Video Consult
-            </a>
-            <a href="#" className="text-white text-lg hover:underline">
-              Surgeries
-            </a>
-          </nav>
-
-          {/* Search Bar Section */}
-          <div className="flex items-center bg-white rounded-md overflow-hidden shadow-md w-2/5">
-            <input
-              type="text"
-              className="w-full px-4 py-2 text-gray-700 focus:outline-none"
-              placeholder="Search doctors, clinics, hospitals, etc."
-            />
-            <button className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700">
-              Search
-            </button>
-          </div>
-
-          {/* Auth Links */}
-          <div className="flex space-x-4 items-center">
-            <a href="#" className="text-white text-lg hover:underline">
-              Login / Signup
-            </a>
-          </div>
-        </div>
-      </header>
+        
 
       <div className="min-h-screen flex flex-col items-center bg-gray-100">
   {/* Main Content Wrapper */}
