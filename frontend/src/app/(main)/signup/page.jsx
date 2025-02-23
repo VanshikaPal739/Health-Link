@@ -2,21 +2,27 @@
 import axios from 'axios';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import * as Yup from 'yup';
 
 const signupSchema = Yup.object().shape({
+  fullName: Yup.string().required('Full name is required'),
   email: Yup.string().email('Invalid email').required('Required'),
-  password: Yup.string().required('Required'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .matches(/[A-Z]/, 'Password must contain at least 1 uppercase letter')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least 1 special character')
+    .required('Required'),
 });
 
 const Signup = () => {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   const signupForm = useFormik({
     initialValues: {
-      name: '',
+      fullName: '',
       email: '',
       password: '',
     },
@@ -42,104 +48,103 @@ const Signup = () => {
   });
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-blue-600">
-      <div className="w-full max-w-3xl overflow-hidden rounded-lg bg-white shadow-lg sm:flex">
-        {/* Left Section (Image) */}
-        <div
-          className="m-2 w-full rounded-2xl bg-gray-400 bg-cover bg-center sm:w-2/5 animate__animated animate__fadeInLeft"
-          style={{
-            backgroundImage:
-              'url(https://static.vecteezy.com/system/resources/thumbnails/031/552/282/small_2x/advertising-portrait-shot-of-a-doctor-team-standing-together-in-a-hospital-and-they-look-at-the-camera-generative-ai-photo.jpg)',
-          }}
-        />
-        
-        {/* Right Section with Signup Form */}
-        <div className="w-full sm:w-3/5 animate__animated animate__fadeInRight">
-          <div className="p-8">
-            <h1 className="text-3xl font-black text-slate-700">Sign Up</h1>
+    <div className="flex h-screen w-full items-center justify-center bg-gray-100">
+      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-lg">
+        <h1 className="mb-6 text-2xl font-semibold text-gray-900">Sign Up</h1>
 
-            <form className="mt-8" onSubmit={signupForm.handleSubmit}>
-              {/* Name Field */}
-              <div className="relative mt-2 w-full">
-                <input
-                  type="text"
-                  id="name"
-                  onChange={signupForm.handleChange}
-                  value={signupForm.values.name}
-                  className="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
-                  placeholder=" "
-                />
-                <label
-                  htmlFor="name"
-                  className="absolute top-2 left-1 z-10 origin-[0] -translate-y-4 scale-75 transform cursor-text select-none bg-white px-2 text-sm text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-blue-600"
-                >
-                  Enter Your Name
-                </label>
-                {signupForm.touched.name && signupForm.errors.name && (
-                  <p className="text-xs text-red-600 mt-2">{signupForm.errors.name}</p>
-                )}
-              </div>
+        <form onSubmit={signupForm.handleSubmit}>
+          {/* Full Name Field */}
+          <div className="mb-4">
+            <label className="mb-2 block text-sm text-gray-600">Full Name</label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              onChange={signupForm.handleChange}
+              value={signupForm.values.fullName}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:outline-none"
+              placeholder="Enter your full name"
+            />
+            {signupForm.touched.fullName && signupForm.errors.fullName && (
+              <p className="mt-1 text-sm text-red-500">{signupForm.errors.fullName}</p>
+            )}
+          </div>
 
-              {/* Email Field */}
-              <div className="relative mt-2 w-full">
-                <input
-                  type="text"
-                  id="email"
-                  onChange={signupForm.handleChange}
-                  value={signupForm.values.email}
-                  className="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
-                  placeholder=" "
-                />
-                <label
-                  htmlFor="email"
-                  className="absolute top-2 left-1 z-10 origin-[0] -translate-y-4 scale-75 transform cursor-text select-none bg-white px-2 text-sm text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-blue-600"
-                >
-                  Enter Your Email
-                </label>
-                {signupForm.touched.email && signupForm.errors.email && (
-                  <p className="text-xs text-red-600 mt-2">{signupForm.errors.email}</p>
-                )}
-              </div>
+          {/* Email Field */}
+          <div className="mb-4">
+            <label className="mb-2 block text-sm text-gray-600">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              onChange={signupForm.handleChange}
+              value={signupForm.values.email}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:outline-none"
+              placeholder="Enter your email"
+            />
+            {signupForm.touched.email && signupForm.errors.email && (
+              <p className="mt-1 text-sm text-red-500">{signupForm.errors.email}</p>
+            )}
+          </div>
 
-              {/* Password Field */}
-              <div className="relative mt-2 w-full">
-                <input
-                  type="password"
-                  id="password"
-                  onChange={signupForm.handleChange}
-                  value={signupForm.values.password}
-                  className="peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
-                  placeholder=" "
-                />
-                <label
-                  htmlFor="password"
-                  className="absolute top-2 left-1 z-10 origin-[0] -translate-y-4 scale-75 transform cursor-text select-none bg-white px-2 text-sm text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-blue-600"
-                >
-                  Enter Your Password
-                </label>
-                {signupForm.touched.password && signupForm.errors.password && (
-                  <p className="text-xs text-red-600 mt-2">{signupForm.errors.password}</p>
-                )}
-              </div>
-
-              {/* Submit Button */}
+          {/* Password Field */}
+          <div className="mb-6">
+            <label className="mb-2 block text-sm text-gray-600">Password</label>
+            <div className="relative">
               <input
-                className="mt-4 w-full cursor-pointer rounded-lg bg-blue-600 pt-3 pb-3 text-white shadow-lg hover:bg-blue-400"
-                type="submit"
-                value="Create account"
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                onChange={signupForm.handleChange}
+                value={signupForm.values.password}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-orange-500 focus:outline-none"
+                placeholder="Enter your password"
               />
-            </form>
-
-            {/* Login Redirect */}
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <a href="login" className="font-bold text-blue-600 hover:text-blue-400">
-                  Log in
-                </a>
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-600"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {signupForm.touched.password && signupForm.errors.password && (
+              <p className="mt-1 text-sm text-red-500">{signupForm.errors.password}</p>
+            )}
+            {/* Password Requirements */}
+            <div className="mt-2 space-y-1">
+              <p className={`text-xs ${signupForm.values.password.length >= 8 ? 'text-green-500' : 'text-gray-500'}`}>
+                ✓ Minimum 8 characters
+              </p>
+              <p className={`text-xs ${/[A-Z]/.test(signupForm.values.password) ? 'text-green-500' : 'text-gray-500'}`}>
+                ✓ 1 uppercase
+              </p>
+              <p className={`text-xs ${/[!@#$%^&*(),.?":{}|<>]/.test(signupForm.values.password) ? 'text-green-500' : 'text-gray-500'}`}>
+                ✓ Atleast 1 special character
               </p>
             </div>
           </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-orange-500 py-3 text-white hover:bg-orange-600 focus:outline-none"
+          >
+            Create account
+          </button>
+        </form>
+
+        {/* Login Redirect */}
+        <div className="mt-6 text-center">
+          <a href="forgot-password" className="text-sm text-orange-500 hover:underline">
+            Forgot password?
+          </a>
+          <p className="mt-4 text-sm text-gray-600">
+            Already have an account?{' '}
+            <a href="login" className="text-orange-500 hover:underline">
+              Log in
+            </a>
+          </p>
         </div>
       </div>
     </div>

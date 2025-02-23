@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { useParams } from "next/navigation"; // Correct import for Next.js routing
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { FaSearch } from "react-icons/fa"; // Import search icon
+import { FaSearch, FaStar, FaStethoscope, FaUserMd } from "react-icons/fa";
 
 const BrowseDoctors = () => {
   const runOnce = useRef(false);
@@ -12,7 +12,6 @@ const BrowseDoctors = () => {
   const [masterList, setMasterList] = useState([]);
   const { doctor } = useParams();
 
-  // Fetch doctors from backend
   const fetchDoctors = async () => {
     try {
       const res = await axios.get("http://localhost:5000/doctor/getall");
@@ -30,7 +29,6 @@ const BrowseDoctors = () => {
     }
   }, []);
 
-  // Search doctors
   const searchDoctor = (e) => {
     const keyword = e.target.value.toLowerCase();
     setDoctorList(
@@ -40,8 +38,11 @@ const BrowseDoctors = () => {
     );
   };
 
-  // Filter doctors by specialization
   const filterCategory = (specialization) => {
+    if (specialization === "") {
+      setDoctorList(masterList);
+      return;
+    }
     setDoctorList(
       masterList.filter((doctor) =>
         doctor.specialization.toLowerCase().includes(specialization.toLowerCase())
@@ -49,90 +50,144 @@ const BrowseDoctors = () => {
     );
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <header className="relative w-full h-[30vh] bg-blue-600 text-white flex flex-col justify-center items-center shadow-lg">
-        <motion.h1
-          className="text-4xl md:text-5xl font-bold tracking-wide text-center"
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-        >
-          Find & Book Your Doctor
-        </motion.h1>
-        <p className="mt-2 text-lg md:text-xl font-light">
-          Search for specialists and book appointments
-        </p>
-      </header>
+      <motion.header 
+        className="relative w-full h-[40vh] bg-gradient-to-r from-blue-600 to-blue-800 text-white"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <div className="absolute inset-0 bg-[url('/api/placeholder/1920/400')] opacity-10 bg-cover bg-center" />
+        <div className="relative h-full max-w-6xl mx-auto px-6 flex flex-col justify-center items-center">
+          <motion.div
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-center"
+          >
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              Find Your Perfect Doctor
+            </h1>
+            <p className="text-xl md:text-2xl text-blue-100">
+              Expert Healthcare at Your Fingertips
+            </p>
+          </motion.div>
+        </div>
+      </motion.header>
 
       {/* Search & Filter Section */}
-      <div className="max-w-6xl mx-auto px-6 py-6">
+      <div className="max-w-6xl mx-auto px-4 -mt-8 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-8 items-center"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="bg-white rounded-2xl shadow-xl p-6 mb-12"
         >
-          <div className="relative w-full md:w-2/3">
-            <input
-              type="text"
-              placeholder="Search doctor by name..."
-              onChange={searchDoctor}
-              className="w-full px-6 py-3 rounded-full border-2 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-300"
-            />
-            <FaSearch className="absolute right-4 top-4 text-gray-500" />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search doctors by name..."
+                onChange={searchDoctor}
+                className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+              />
+            </div>
+            <select
+              onChange={(e) => filterCategory(e.target.value)}
+              className="py-4 px-6 rounded-xl border-2 border-gray-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 cursor-pointer"
+            >
+              <option value="">All Specialties</option>
+              <option value="Cardiologist">Cardiologist</option>
+              <option value="Dermatologist">Dermatologist</option>
+              <option value="Pediatrician">Pediatrician</option>
+              <option value="Homopathy">Homopathy</option>
+              <option value="Dentist">Dentist</option>
+              <option value="Pulmonologist">Pulmonologist</option>
+            </select>
           </div>
-
-          <select
-            onChange={(e) => filterCategory(e.target.value)}
-            className="w-full md:w-1/3 px-6 py-3 rounded-full border-2 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-300"
-          >
-            <option value="">All Specialties</option>
-            <option value="Cardiologist">Cardiologist</option>
-            <option value="Dermatologist">Dermatologist</option>
-            <option value="Pediatrician">Pediatrician</option>
-            <option value="Homopathy">Homopathy</option>
-            <option value="Dentist">Dentist</option>
-            <option value="Pulmonologist">Pulmonologist</option>
-          </select>
         </motion.div>
 
         {/* Doctors Grid */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12"
         >
           {doctorList.length > 0 ? (
             doctorList.map((doctor) => (
               <motion.div
                 key={doctor._id}
-                whileHover={{ scale: 1.05 }}
-                className="bg-white shadow-xl rounded-xl overflow-hidden transition-transform transform duration-300 hover:shadow-2xl border border-gray-200"
+                variants={itemVariants}
+                whileHover={{ y: -5 }}
+                className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 group"
               >
-                <img
-                  src={process.env.NEXT_PUBLIC_API_URL + "/" + doctor.image || "/default-doctor.jpg"}
-                  alt={doctor.name}
-                  className="w-full h-48 object-cover rounded-t-xl"
-                />
-                <div className="p-6 text-center">
-                  <h2 className="text-2xl font-semibold text-gray-800">{doctor.name}</h2>
-                  <p className="text-gray-600">{doctor.specialization}</p>
-                  <p className="text-gray-500">{doctor.bio}</p>
-                  <p className="text-yellow-500 mt-2">⭐ {doctor.rating}</p>
+                <div className="relative">
+                  <img
+                    src={process.env.NEXT_PUBLIC_API_URL + "/" + doctor.image || "/api/placeholder/400/300"}
+                    alt={doctor.name}
+                    className="w-full h-56 object-cover"
+                  />
+                  <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {doctor.specialization}
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                    {doctor.name}
+                  </h2>
+                  <div className="flex items-center mt-2 text-yellow-400">
+                    {[...Array(5)].map((_, i) => (
+                      <FaStar
+                        key={i}
+                        className={i < Math.floor(doctor.rating) ? "text-yellow-400" : "text-gray-200"}
+                      />
+                    ))}
+                    <span className="ml-2 text-gray-600">{doctor.rating}</span>
+                  </div>
+                  <p className="mt-3 text-gray-600 line-clamp-2">{doctor.bio}</p>
                   <Link
                     href={`/view-doctor/${doctor._id}`}
-                    className="mt-4 px-6 py-3 bg-blue-500 hover:bg-blue-700 text-white rounded-full shadow-lg transition duration-300 inline-block"
+                    className="mt-4 w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all duration-300 transform group-hover:scale-[1.02]"
                   >
-                    View Doctor
+                    <FaUserMd className="mr-2" />
+                    View Profile
                   </Link>
                 </div>
               </motion.div>
             ))
           ) : (
-            <p className="text-center text-gray-600 col-span-3">No doctors found</p>
+            <motion.div 
+              variants={itemVariants}
+              className="col-span-full text-center py-12"
+            >
+              <FaStethoscope className="mx-auto text-6xl text-gray-300 mb-4" />
+              <p className="text-xl text-gray-500">No doctors found matching your criteria</p>
+            </motion.div>
           )}
         </motion.div>
       </div>
