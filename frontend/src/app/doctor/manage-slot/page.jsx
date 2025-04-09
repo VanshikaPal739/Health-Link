@@ -6,11 +6,13 @@ import * as Yup from 'yup';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+
 export default function ManageSlotsPage() {
   const [slots, setSlots] = useState([]);
   const [doctor, setDoctor] = useState(null);
   const [token, setToken] = useState(null);
   const runOnce = useRef(false);
+
 
   // Retrieve token from localStorage
   useEffect(() => {

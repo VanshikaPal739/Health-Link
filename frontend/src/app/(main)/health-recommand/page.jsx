@@ -33,10 +33,14 @@ const Recommend = () => {
       healthGoals: Yup.string().required("Health goals are required"),
     }),
     onSubmit: async (values) => {
+      console.log(values);
+      
       setLoading(true);
       let result;
       try {
         const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        console.log(model);
+        
         result = await model.generateContent({
           history: [
             {
@@ -48,6 +52,8 @@ const Recommend = () => {
           ],
          
         });
+        console.log(result);
+        
 
         const response = result.response.text();
         setRecommendation(response);

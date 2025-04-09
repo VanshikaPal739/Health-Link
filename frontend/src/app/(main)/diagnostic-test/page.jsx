@@ -85,6 +85,7 @@ const AddTopBookedTest = () => {
             <input
               type="number"
               name="price"
+              
               value={formik.values.price}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}

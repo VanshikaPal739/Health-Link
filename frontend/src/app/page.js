@@ -62,8 +62,7 @@ const HomePage = () => {
         The Hospital of the <span className="text-blue-800">future, today.</span>
       </h1>
       <p className="text-lg">
-        Quisquam suspendisse elementum gravida fusce massa enim accumsan
-        faucibus vel facilisis.
+      The platform reduces manual administrative work, improves accessibility to healthcare, and enhances the overall patient experience.
       </p>
       <div className="flex gap-4 mt-4">
         <a herf="signup" 
